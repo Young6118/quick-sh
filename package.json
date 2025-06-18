@@ -2,26 +2,27 @@
   "name": "quick-sh",
   "version": "1.0.4",
   "description": "A local script management tool for quick execution of JavaScript and Shell scripts with alias support",
-  "main": "lib/script-manager.js",
+  "main": "src/lib/script-manager.js",
   "bin": {
-    "q": "bin/cli.js"
+    "q": "src/bin/cli.js"
   },
   "files": [
-    "bin/",
-    "lib/",
+    "src/bin/",
+    "src/lib/",
     "README.md",
     "LICENSE",
-    "locales/"
+    "src/locales/"
   ],
   "scripts": {
-    "test": "node test/run-all.js",
-    "test:legacy": "node test/test.js",
-    "test:basic": "node test/basic.test.js",
-    "test:script": "node test/script-execution.test.js",
-    "test:alias": "node test/alias.test.js",
-    "test:error": "node test/error-handling.test.js",
-    "test:config": "node test/config.test.js",
-    "test:help": "node test/run-all.js --help",
+    "test": "node src/test/run-all.js",
+    "test:legacy": "node src/test/test.js",
+    "test:basic": "node src/test/basic.test.js",
+    "test:script": "node src/test/script-execution.test.js",
+    "test:alias": "node src/test/alias.test.js",
+    "test:error": "node src/test/error-handling.test.js",
+    "test:config": "node src/test/config.test.js",
+    "test:ai": "node src/test/ai.test.js",
+    "test:help": "node src/test/run-all.js --help",
     "test:manual": "echo \"Run manual tests with: q test-args, q test-args.sh, q test-dir\"",
     "prepublishOnly": "npm test"
   },
@@ -53,13 +54,14 @@
   },
   "dependencies": {
     "commander": "^9.0.0",
-    "fs-extra": "^11.0.0"
+    "fs-extra": "^11.0.0",
+    "openai": "^3.3.0"
   },
   "devDependencies": {},
   "preferGlobal": true,
   "directories": {
     "example": "examples",
-    "lib": "lib",
-    "test": "test"
+    "lib": "src/lib",
+    "test": "src/test"
   }
 }
