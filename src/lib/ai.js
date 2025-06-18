@@ -1,5 +1,5 @@
 const readline = require('readline');
-const { Configuration, OpenAIApi } = require('openai');
+const axios = require('axios');
 const { t } = require('./i18n');
 const { readConfig, writeConfig } = require('./config');
 
@@ -513,36 +513,56 @@ async function handleUserInput(input, model, promptCallback) {
 // 调用AI API
 async function callAI(messages, model) {
   try {
-    // 构建基础URL
-    let basePath = model.apiUrl;
-    if (!basePath.startsWith('http://') && !basePath.startsWith('https://')) {
-      basePath = `https://${basePath}`;
+    // 构建完整的API URL
+    let baseUrl = model.apiUrl;
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      baseUrl = `https://${baseUrl}`;
     }
     
-    // 创建 OpenAI 配置
-    const configuration = new Configuration({
-      apiKey: model.apiKey,
-      basePath: basePath,
-    });
+    const apiUrl = `${baseUrl}${model.apiPath}`;
     
-    // 创建 OpenAI API 实例
-    const openai = new OpenAIApi(configuration);
-
-    // 调用 chat completions API
-    const response = await openai.createChatCompletion({
+    // 构建请求payload
+    const payload = {
       model: model.model,
       messages: messages,
       max_tokens: model.maxTokens,
       temperature: model.temperature,
+    };
+    
+    // 构建请求headers
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${model.apiKey}`
+    };
+    
+    // 发送HTTP请求
+    console.log(111, apiUrl, payload, headers)
+    const response = await axios.post(apiUrl, payload, {
+      headers: headers,
+      timeout: 30000 // 30秒超时
     });
 
     return response.data;
   } catch (error) {
     // 处理不同类型的错误
-    if (error.code === 'ENOTFOUND') {
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
       throw new Error(`${t('ai.connectionError')}: ${error.message}`);
     } else if (error.response && error.response.status) {
-      throw new Error(`${t('ai.apiError')}: ${error.response.status} - ${error.response.statusText}`);
+      const status = error.response.status;
+      const statusText = error.response.statusText;
+      const errorData = error.response.data;
+      let errorMessage = `HTTP ${status}: ${statusText}`;
+      
+      // 尝试获取更详细的错误信息
+      if (errorData && errorData.error) {
+        if (typeof errorData.error === 'string') {
+          errorMessage += ` - ${errorData.error}`;
+        } else if (errorData.error.message) {
+          errorMessage += ` - ${errorData.error.message}`;
+        }
+      }
+      
+      throw new Error(`${t('ai.apiError')}: ${errorMessage}`);
     } else {
       throw new Error(`${t('ai.error', { error: error.message })}`);
     }
