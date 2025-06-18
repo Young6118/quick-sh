@@ -1,6 +1,6 @@
 {
   "name": "quick-sh",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A local script management tool for quick execution of JavaScript and Shell scripts with alias support",
   "main": "src/lib/script-manager.js",
   "bin": {
