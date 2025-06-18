@@ -119,6 +119,17 @@ function getGitStatus() {
   }
 }
 
+// 获取当前git用户信息
+function getCurrentGitUser() {
+  try {
+    const name = execSync('git config user.name', { encoding: 'utf-8' }).trim();
+    const email = execSync('git config user.email', { encoding: 'utf-8' }).trim();
+    return { name, email };
+  } catch (error) {
+    return { name: '未设置', email: '未设置' };
+  }
+}
+
 // 验证commit message格式
 function validateCommitMessage(message) {
   const conventionalCommitRegex = /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!)?: .{1,50}/;
@@ -279,7 +290,15 @@ async function interactiveCommit() {
     console.log('');
   }
   
-  const confirm = await askQuestion('确认提交? (Y/n): ');
+  // 显示当前用户信息
+  const currentUser = getCurrentGitUser();
+  console.log(colorize('👤 当前提交用户:', 'cyan'));
+  console.log('==================');
+  console.log(`${colorize('姓名:', 'yellow')} ${currentUser.name}`);
+  console.log(`${colorize('邮箱:', 'yellow')} ${currentUser.email}`);
+  console.log('');
+  
+  const confirm = await askQuestion('确认以此身份提交? (Y/n): ');
   
   if (confirm.toLowerCase() !== 'n') {
     try {
