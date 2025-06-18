@@ -1,0 +1,11 @@
+{
+  "name": "ai-chat-tool",
+  "version": "1.0.0",
+  "description": "Command-line AI chat interface using OpenAI API with multi-turn conversations",
+  "main": "ai-chat.js",
+  "scripts": {
+    "start": "node ai-chat.js"
+  },
+  "keywords": ["ai", "chat", "openai", "cli", "conversation"],
+  "author": "Quick Shell Examples"
+} 

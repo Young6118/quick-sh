@@ -1,0 +1,70 @@
+{
+  "aliases": {
+    "chat": {
+      "bin": "./deploy/index.js",
+      "description": "Deploy the project"
+    },
+    "commit": {
+      "bin": "./git-tools/git-commit.js",
+      "description": "Commit the project"
+    },
+    "setup-hooks": {
+      "bin": "./git-tools/setup-git-hooks.js",
+      "description": "Setup git hooks"
+    },
+    "git-account": {
+      "bin": "./git-tools/git-account.js",
+      "description": "Manage git accounts"
+    },
+    "git-email-cleaner": {
+      "bin": "./git-tools/git-email-cleaner.js",
+      "description": "Clean and replace email addresses in Git commit history"
+    },
+    "npm-version": {
+      "bin": "./npm-tools/npm-version.js",
+      "description": "NPM version management tool"
+    },
+    "npm-demo": {
+      "bin": "./npm-tools/demo.js",
+      "description": "NPM tools demo and usage guide"
+    },
+    "remote-demo": {
+      "bin": "./remote-demo.js",
+      "description": "多源配置管理功能演示"
+    },
+    "backup": {
+      "bin": "./utils/backup.sh",
+      "description": "Backup the project"
+    },
+    "hello": {
+      "bin": "./utils/hello.js",
+      "description": "Say hello"
+    },
+    "help": {
+      "bin": "./utils/help.js",
+      "description": "Show help"
+    },
+    "test-args": {
+      "bin": "./test-scripts/test-args.js",
+      "description": "Test args"
+    },
+    "test-args-sh": {
+      "bin": "./test-scripts/test-args.sh",
+      "description": "Test args sh"
+    },
+    "test-dir": {
+      "bin": "./test-scripts/test-dir",
+      "description": "Test dir"
+    },
+    "py": {
+      "bin": "/usr/bin/python3",
+      "description": "Python"
+    },
+    "ww": {
+      "bin": "/usr/bin/which",
+      "description": "Which"
+    },
+    "w": "which",
+    "echo": "echo"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "deploy-script",
+  "version": "1.0.0",
+  "description": "Automated deployment script with multi-step process",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["deploy", "automation", "ci-cd"],
+  "author": "Quick Shell Examples"
+} 

@@ -1,0 +1,64 @@
+{
+  "name": "quick-sh",
+  "version": "1.0.2",
+  "description": "A local script management tool for quick execution of JavaScript and Shell scripts with alias support",
+  "main": "lib/script-manager.js",
+  "bin": {
+    "q": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/run-all.js",
+    "test:legacy": "node test/test.js",
+    "test:basic": "node test/basic.test.js",
+    "test:script": "node test/script-execution.test.js",
+    "test:alias": "node test/alias.test.js",
+    "test:error": "node test/error-handling.test.js",
+    "test:config": "node test/config.test.js",
+    "test:help": "node test/run-all.js --help",
+    "test:manual": "echo \"Run manual tests with: q test-args, q test-args.sh, q test-dir\"",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "shell",
+    "script",
+    "cli",
+    "automation",
+    "local-scripts",
+    "alias",
+    "command-line",
+    "script-manager",
+    "javascript",
+    "bash",
+    "quick-execution"
+  ],
+  "author": "Young6118 <zy1308536472@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Young6118/quick-sh.git"
+  },
+  "homepage": "https://github.com/Young6118/quick-sh#readme",
+  "bugs": {
+    "url": "https://github.com/Young6118/quick-sh/issues"
+  },
+  "dependencies": {
+    "commander": "^9.0.0",
+    "fs-extra": "^11.0.0"
+  },
+  "devDependencies": {},
+  "preferGlobal": true,
+  "directories": {
+    "example": "examples",
+    "lib": "lib",
+    "test": "test"
+  }
+}
