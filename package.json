@@ -10,7 +10,8 @@
     "bin/",
     "lib/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locales/"
   ],
   "scripts": {
     "test": "node test/run-all.js",
