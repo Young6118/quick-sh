@@ -536,7 +536,6 @@ async function callAI(messages, model) {
     };
     
     // 发送HTTP请求
-    console.log(111, apiUrl, payload, headers)
     const response = await axios.post(apiUrl, payload, {
       headers: headers,
       timeout: 30000 // 30秒超时
