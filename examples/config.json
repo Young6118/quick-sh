@@ -16,6 +16,14 @@
       "bin": "./git-tools/git-account.js",
       "description": "Manage git accounts"
     },
+    "git-pro": {
+      "bin": "./git-tools/git-account-pro.js",
+      "description": "Advanced Git account management with auto-switching"
+    },
+    "git-pro-demo": {
+      "bin": "./git-tools/git-pro-demo.js",
+      "description": "Git Account Pro feature demonstration"
+    },
     "git-email-cleaner": {
       "bin": "./git-tools/git-email-cleaner.js",
       "description": "Clean and replace email addresses in Git commit history"
