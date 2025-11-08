@@ -1,5 +1,9 @@
 {
   "aliases": {
+    "ai": {
+      "bin": "./ai-chat/ai-chat.js",
+      "description": "AI chat"
+    },
     "chat": {
       "bin": "./deploy/index.js",
       "description": "Deploy the project"
