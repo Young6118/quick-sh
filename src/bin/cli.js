@@ -19,11 +19,18 @@ const {
   listShells,
   showShellHelp,
   addShell,
+  addShellWithPassword,
+  editShell,
+  editShellInteractive,
   renameShell,
   removeShell,
   addShellInteractive,
   renameShellInteractive,
-  removeShellInteractive
+  removeShellInteractive,
+  setShellPassword,
+  removeShellPassword,
+  setPasswordInteractive,
+  listPasswords
 } = require('../lib/shell-manager');
 const { initI18n, forceReinitI18n } = require('../lib/i18n');
 const packageJson = require('../../package.json');
@@ -201,9 +208,32 @@ if (args.length > 0) {
         }
       }
       if (opts.name && opts.host) {
-        run(addShell({ name: opts.name, host: opts.host, user: opts.user, port: opts.port }));
+        run(addShellWithPassword({
+          name: opts.name,
+          host: opts.host,
+          user: opts.user,
+          port: opts.port,
+          password: opts.password
+        }));
       } else {
         run(addShellInteractive());
+      }
+      return;
+    }
+    if (sub === 'edit') {
+      const editRest = rest.slice(0);
+      const name = editRest[0] && !editRest[0].startsWith('--') ? editRest.shift() : null;
+      const editOpts = {};
+      for (let i = 0; i < editRest.length; i += 2) {
+        if (editRest[i] && editRest[i].startsWith('--') && editRest[i + 1] != null) {
+          editOpts[editRest[i].slice(2)] = editRest[i + 1];
+        }
+      }
+      const hasOpts = Object.keys(editOpts).length > 0;
+      if (hasOpts && name) {
+        run(editShell(name, editOpts));
+      } else {
+        run(editShellInteractive(name || undefined));
       }
       return;
     }
@@ -220,6 +250,32 @@ if (args.length > 0) {
         run(removeShell(rest[0]));
       } else {
         run(removeShellInteractive());
+      }
+      return;
+    }
+    if (sub === 'password') {
+      const pwdSub = rest[0];
+      if (pwdSub === 'set') {
+        const name = rest[1];
+        if (name) {
+          run(setPasswordInteractive(name));
+        } else {
+          console.error('❌ q sh password set <name>');
+          process.exit(1);
+        }
+      } else if (pwdSub === 'remove' || pwdSub === 'rm') {
+        const name = rest[1];
+        if (name) {
+          run(removeShellPassword(name).then(() => console.log(require('../lib/i18n').t('shell.passwordRemoved', { name }))));
+        } else {
+          console.error('❌ q sh password remove <name>');
+          process.exit(1);
+        }
+      } else if (pwdSub === 'list' || pwdSub === 'ls') {
+        run(listPasswords());
+      } else {
+        console.error('❌ q sh password set | remove | list');
+        process.exit(1);
       }
       return;
     }

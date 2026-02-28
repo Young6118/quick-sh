@@ -1,7 +1,13 @@
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const readline = require('readline');
+const path = require('path');
+const os = require('os');
+const fs = require('fs-extra');
 const { readConfig, writeConfig } = require('./config');
 const { t } = require('./i18n');
+
+const PASSWORDS_FILE = path.join(os.homedir(), '.quick-sh', 'shell-passwords.json');
+const CONFIG_DIR = path.join(os.homedir(), '.quick-sh');
 
 /** Shell 配置结构（存于 ~/.quick-sh/config.json 的 shells 字段）：
  *  "shells": {
@@ -20,6 +26,51 @@ async function getFullConfig() {
   const config = await readConfig();
   if (!config.shells || typeof config.shells !== 'object') config.shells = {};
   return config;
+}
+
+/** 密码单独存于 ~/.quick-sh/shell-passwords.json，格式 { "name": "password" } */
+async function readShellPasswords() {
+  try {
+    if (await fs.pathExists(PASSWORDS_FILE)) {
+      const data = await fs.readJson(PASSWORDS_FILE);
+      return typeof data === 'object' && data !== null ? data : {};
+    }
+  } catch (e) {
+    // ignore
+  }
+  return {};
+}
+
+async function getShellPassword(name) {
+  const passwords = await readShellPasswords();
+  return passwords[name] != null ? String(passwords[name]) : null;
+}
+
+async function writeShellPasswords(passwords) {
+  await fs.ensureDir(CONFIG_DIR);
+  await fs.writeJson(PASSWORDS_FILE, passwords, { spaces: 2 });
+  try {
+    await fs.chmod(PASSWORDS_FILE, 0o600);
+  } catch (e) {
+    // ignore on Windows
+  }
+}
+
+async function setShellPassword(name, password) {
+  const passwords = await readShellPasswords();
+  passwords[name] = password;
+  await writeShellPasswords(passwords);
+}
+
+async function removeShellPassword(name) {
+  const passwords = await readShellPasswords();
+  delete passwords[name];
+  await writeShellPasswords(passwords);
+}
+
+function hasSshpass() {
+  const r = spawnSync('which', ['sshpass'], { encoding: 'utf8' });
+  return r.status === 0 && r.stdout && r.stdout.trim().length > 0;
 }
 
 async function connectShell(name) {
@@ -44,16 +95,27 @@ async function connectShell(name) {
   const user = one.user || null;
   const port = one.port != null ? Number(one.port) : 22;
   const target = user ? `${user}@${host}` : host;
-  const args = ['-p', String(port), target];
+  const sshArgs = ['-p', String(port), target];
 
-  // 透传后续参数给 ssh（如 -t "tmux attach"）
   const argv = process.argv.slice(2);
   const shIndex = argv.indexOf('sh');
   if (shIndex !== -1 && argv.length > shIndex + 2) {
-    args.push(...argv.slice(shIndex + 2));
+    sshArgs.push(...argv.slice(shIndex + 2));
   }
 
-  const child = spawn('ssh', args, {
+  const password = await getShellPassword(name);
+  const useSshpass = password && hasSshpass();
+  if (password && !useSshpass) {
+    console.log('');
+    console.log('💡 ' + t('shell.passwordSavedButNoSshpass'));
+    console.log('');
+  }
+  const spawnArgs = useSshpass
+    ? ['-p', password, 'ssh', ...sshArgs]
+    : sshArgs;
+  const spawnCmd = useSshpass ? 'sshpass' : 'ssh';
+
+  const child = spawn(spawnCmd, spawnArgs, {
     stdio: 'inherit',
     shell: false
   });
@@ -72,6 +134,48 @@ async function connectShell(name) {
   });
 }
 
+async function setPasswordInteractive(name) {
+  const shells = await getShellsConfig();
+  if (!shells[name]) {
+    throw new Error(t('shell.notFound', { name }));
+  }
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  if (process.stdin.isTTY && process.platform !== 'win32') {
+    try {
+      spawnSync('stty', ['-echo'], { stdio: 'inherit' });
+    } catch (e) {
+      // ignore
+    }
+  }
+  const password = await new Promise(resolve => {
+    rl.question(t('shell.promptPassword'), ans => resolve(ans || ''));
+  });
+  if (process.stdin.isTTY && process.platform !== 'win32') {
+    try {
+      spawnSync('stty', ['echo'], { stdio: 'inherit' });
+    } catch (e) {
+      // ignore
+    }
+  }
+  rl.close();
+  if (!password) {
+    throw new Error(t('shell.passwordEmpty'));
+  }
+  await setShellPassword(name, password);
+  console.log(t('shell.passwordSet', { name }));
+}
+
+async function listPasswords() {
+  const passwords = await readShellPasswords();
+  const names = Object.keys(passwords);
+  if (names.length === 0) {
+    console.log(t('shell.passwordListEmpty'));
+    return;
+  }
+  console.log(t('shell.passwordListTitle'));
+  names.forEach(n => console.log(`  • ${n}`));
+}
+
 function showShellHelp() {
   console.log(t('shell.helpTitle'));
   console.log('');
@@ -79,8 +183,12 @@ function showShellHelp() {
   console.log(`  q sh              ${t('shell.helpList')}`);
   console.log(`  q sh <name>       ${t('shell.helpConnect')}`);
   console.log(`  q sh add          ${t('shell.helpAdd')}`);
+  console.log(`  q sh edit [name]  ${t('shell.helpEdit')}`);
   console.log(`  q sh rename       ${t('shell.helpRename')}`);
   console.log(`  q sh remove <name> ${t('shell.helpRemove')}`);
+  console.log(`  q sh password set <name>   ${t('shell.helpPasswordSet')}`);
+  console.log(`  q sh password remove <name> ${t('shell.helpPasswordRemove')}`);
+  console.log(`  q sh password list         ${t('shell.helpPasswordList')}`);
   console.log('');
   console.log(t('shell.helpConfig'));
   console.log(t('shell.helpExample'));
@@ -103,6 +211,89 @@ async function addShell(opts) {
   };
   await writeConfig(config);
   console.log(t('shell.addSuccess', { name }));
+}
+
+/** 新增连接并可选保存密码。opts 含 name, host, user?, port?, password? */
+async function addShellWithPassword(opts) {
+  const { password, ...addOpts } = opts;
+  await addShell(addOpts);
+  if (password != null && password !== '') {
+    await setShellPassword(opts.name, password);
+  }
+}
+
+/** 编辑连接，新值直接覆盖旧配置；可只传部分字段与当前合并。opts: { host?, user?, port?, password? } */
+async function editShell(name, opts) {
+  if (!name) {
+    throw new Error(t('shell.addNameHostRequired'));
+  }
+  const config = await getFullConfig();
+  const current = config.shells[name];
+  if (!current) {
+    throw new Error(t('shell.notFound', { name }));
+  }
+  const host = opts.host != null && opts.host !== '' ? opts.host : current.host;
+  const user = opts.user !== undefined ? opts.user : current.user;
+  const port = opts.port !== undefined && opts.port !== '' ? (Number(opts.port) || 22) : (current.port != null ? current.port : 22);
+  if (!host) {
+    throw new Error(t('shell.noHost', { name }));
+  }
+  config.shells[name] = {
+    host,
+    ...(user != null && user !== '' && { user }),
+    ...(port != null && { port })
+  };
+  await writeConfig(config);
+  if (opts.password !== undefined) {
+    if (opts.password === '' || opts.password == null) {
+      await removeShellPassword(name);
+    } else {
+      await setShellPassword(name, opts.password);
+    }
+  }
+  console.log(t('shell.editSuccess', { name }));
+}
+
+/** 交互式编辑：可指定 name 或之后选择 */
+async function editShellInteractive(name) {
+  const shells = await getShellsConfig();
+  const names = Object.keys(shells);
+  if (names.length === 0) {
+    console.log(t('shell.noShells'));
+    return;
+  }
+  let target = name;
+  if (!target) {
+    console.log(t('shell.listTitle'));
+    names.forEach((n, i) => {
+      const c = shells[n];
+      console.log(`  ${i + 1}. ${n.padEnd(12)} ${(c.user || '') + (c.user ? '@' : '')}${c.host || '?'}`);
+    });
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    target = await ask(rl, t('shell.promptEditWhich'));
+    rl.close();
+    if (!target) return;
+    target = names.includes(target) ? target : names[Number(target) - 1];
+    if (!target || !shells[target]) {
+      throw new Error(t('shell.notFound', { name: target }));
+    }
+  } else if (!shells[target]) {
+    throw new Error(t('shell.notFound', { name: target }));
+  }
+  const current = shells[target];
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const host = await ask(rl, t('shell.promptHost'), current.host || '');
+  const user = await ask(rl, t('shell.promptUser'), current.user != null ? String(current.user) : 'root');
+  const port = await ask(rl, t('shell.promptPort'), current.port != null ? String(current.port) : '22');
+  const password = await askPasswordOptional(rl);
+  rl.close();
+  if (!host) throw new Error(t('shell.addNameHostRequired'));
+  await editShell(target, {
+    host,
+    user: user || undefined,
+    port: port || '22',
+    ...(password !== '' && { password })
+  });
 }
 
 /** 重命名连接 */
@@ -144,6 +335,29 @@ function ask(rl, question, defaultValue = '') {
   });
 }
 
+/** 交互式询问可选密码（输入不显示，直接回车则跳过） */
+function askPasswordOptional(rl) {
+  if (process.stdin.isTTY && process.platform !== 'win32') {
+    try {
+      spawnSync('stty', ['-echo'], { stdio: 'inherit' });
+    } catch (e) {
+      // ignore
+    }
+  }
+  return new Promise(resolve => {
+    rl.question(t('shell.promptPasswordOptional'), ans => {
+      if (process.stdin.isTTY && process.platform !== 'win32') {
+        try {
+          spawnSync('stty', ['echo'], { stdio: 'inherit' });
+        } catch (e) {
+          // ignore
+        }
+      }
+      resolve((ans || '').trim());
+    });
+  });
+}
+
 /** 交互式新增 */
 async function addShellInteractive() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -164,8 +378,13 @@ async function addShellInteractive() {
   }
   const user = await ask(rl, t('shell.promptUser'), 'root');
   const port = await ask(rl, t('shell.promptPort'), '22');
+  const password = await askPasswordOptional(rl);
   rl.close();
   await addShell({ name, host, user: user || undefined, port: port || '22' });
+  if (password !== '') {
+    await setShellPassword(name, password);
+    console.log(t('shell.passwordSet', { name }));
+  }
 }
 
 /** 交互式重命名 */
@@ -257,9 +476,17 @@ module.exports = {
   listShells,
   showShellHelp,
   addShell,
+  addShellWithPassword,
+  editShell,
   renameShell,
   removeShell,
   addShellInteractive,
+  editShellInteractive,
   renameShellInteractive,
-  removeShellInteractive
+  removeShellInteractive,
+  setShellPassword,
+  removeShellPassword,
+  setPasswordInteractive,
+  listPasswords,
+  getShellPassword
 };
