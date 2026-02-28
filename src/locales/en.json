@@ -26,7 +26,8 @@
     "showLanguageExample": "Show current language settings",
     "aiChat": "AI chat with configuration",
     "configureAI": "Configure AI models",
-    "useAIModel": "Use specific AI model for chat"
+    "useAIModel": "Use specific AI model for chat",
+    "shellConnect": "SSH/shell connection (config in ~/.quick-sh/config.json shells)"
   },
   "commands": {
     "pathSet": "Script path set to: {{path}}",
@@ -249,5 +250,41 @@
     "conversationHistory": "Conversation History",
     "noHistory": "No conversation history yet",
     "historyCleared": "Conversation history cleared"
+  },
+  "shell": {
+    "notFound": "Shell \"{{name}}\" not found in config.",
+    "noHost": "Shell \"{{name}}\" has no host.",
+    "available": "Available shell names:",
+    "noShells": "No shell connections configured.",
+    "configHint": "Add \"shells\" in ~/.quick-sh/config.json. Example: {\"shells\":{\"server1\":{\"host\":\"192.168.1.1\",\"user\":\"root\",\"port\":22}}}",
+    "helpHint": "Use q sh -h for help",
+    "listTitle": "Shell connections (from ~/.quick-sh/config.json):",
+    "usageHint": "Usage: q sh <name>",
+    "sshError": "SSH error: {{error}}",
+    "helpTitle": "q sh - SSH/shell connections (config: shells in ~/.quick-sh/config.json)",
+    "helpUsage": "Usage:",
+    "helpList": "List configured connections",
+    "helpConnect": "Connect by name (SSH)",
+    "helpConfig": "Config: add a shells object in ~/.quick-sh/config.json, e.g. {\"server1\":{\"host\":\"host\",\"user\":\"root\",\"port\":22}}.",
+    "helpExample": "Examples: q sh, q sh server1",
+    "helpAdd": "Add connection (interactive or --name x --host h [--user] [--port])",
+    "helpRename": "Rename connection (interactive or rename <old> <new>)",
+    "helpRemove": "Remove connection (interactive or remove <name>)",
+    "addNameHostRequired": "Provide name and host (or use interactive: q sh add)",
+    "addNameExists": "Connection name \"{{name}}\" already exists",
+    "addSuccess": "Added connection: {{name}}",
+    "renameArgsRequired": "Provide old and new name, or use interactive: q sh rename",
+    "renameSuccess": "Renamed: {{oldName}} → {{newName}}",
+    "removeNameRequired": "Provide name to remove, or use interactive: q sh remove",
+    "removeSuccess": "Removed connection: {{name}}",
+    "removeCancelled": "Remove cancelled",
+    "promptName": "Connection name",
+    "promptHost": "Host",
+    "promptUser": "User",
+    "promptPort": "Port",
+    "promptRenameOld": "Connection to rename (name or index)",
+    "promptRenameNew": "New name",
+    "promptRemove": "Connection to remove (name or index)",
+    "promptRemoveConfirm": "Remove \"{{name}}\"? (y/N)"
   }
 } 

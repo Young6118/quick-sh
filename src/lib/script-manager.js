@@ -438,7 +438,8 @@ function showBrief() {
   console.log(`  q <script>              ${t('help.executeScript')}`);
   console.log(`  q -l                    ${t('help.listScripts')}`);
   console.log(`  q -h, --help            ${t('help.showHelp')}`);
-  console.log(`  q -path <dir>           ${t('help.setDirectory')}\n`);
+  console.log(`  q -path <dir>           ${t('help.setDirectory')}`);
+  console.log(`  q sh [name]             ${t('help.shellConnect')}\n`);
   
   console.log(t('help.examples'));
   console.log(`  q hello                 ${t('help.runScript', { script: 'hello' })}`);

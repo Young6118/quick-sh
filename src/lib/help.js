@@ -11,6 +11,7 @@ ${t('help.usage')}
   q -path <dir>           ${t('help.setDirectory')}
   q -lang [code]          ${t('help.setLanguage')}
   q -ai [-config/-use]    ${t('help.aiChat')}
+  q sh [name]             ${t('help.shellConnect')}
 
 ${t('help.localScripts')}
   q hello                 ${t('help.runScript', { script: 'hello.js or hello.sh' })}

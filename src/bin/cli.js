@@ -14,6 +14,17 @@ const {
   removeRemoteScript,
   SOURCE_TYPES 
 } = require('../lib/remote-manager');
+const {
+  connectShell,
+  listShells,
+  showShellHelp,
+  addShell,
+  renameShell,
+  removeShell,
+  addShellInteractive,
+  renameShellInteractive,
+  removeShellInteractive
+} = require('../lib/shell-manager');
 const { initI18n, forceReinitI18n } = require('../lib/i18n');
 const packageJson = require('../../package.json');
 
@@ -167,6 +178,56 @@ if (args.length > 0) {
       console.error(`❌ ${error.message}`);
       process.exit(1);
     });
+    return;
+  }
+  
+  // Shell 连接：q sh [name] / add / rename / remove，配置来自 ~/.quick-sh/config.json 的 shells
+  if (firstArg === 'sh') {
+    const sub = args[1];
+    const rest = args.slice(2);
+    const run = (p) => p.catch(error => {
+      console.error(`❌ ${error.message}`);
+      process.exit(1);
+    });
+    if (sub === '-h' || sub === '--help' || sub === 'help') {
+      showShellHelp();
+      return;
+    }
+    if (sub === 'add') {
+      const opts = {};
+      for (let i = 0; i < rest.length; i += 2) {
+        if (rest[i] && rest[i].startsWith('--') && rest[i + 1] != null) {
+          opts[rest[i].slice(2)] = rest[i + 1];
+        }
+      }
+      if (opts.name && opts.host) {
+        run(addShell({ name: opts.name, host: opts.host, user: opts.user, port: opts.port }));
+      } else {
+        run(addShellInteractive());
+      }
+      return;
+    }
+    if (sub === 'rename') {
+      if (rest.length >= 2) {
+        run(renameShell(rest[0], rest[1]));
+      } else {
+        run(renameShellInteractive());
+      }
+      return;
+    }
+    if (sub === 'remove' || sub === 'rm') {
+      if (rest.length >= 1) {
+        run(removeShell(rest[0]));
+      } else {
+        run(removeShellInteractive());
+      }
+      return;
+    }
+    if (sub) {
+      run(connectShell(sub));
+    } else {
+      listShells();
+    }
     return;
   }
   

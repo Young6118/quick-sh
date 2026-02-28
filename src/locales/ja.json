@@ -26,7 +26,8 @@
     "showLanguageExample": "現在の言語設定を表示",
     "aiChat": "AI チャット設定",
     "configureAI": "AI モデルを設定",
-    "useAIModel": "指定の AI モデルでチャット"
+    "useAIModel": "指定の AI モデルでチャット",
+    "shellConnect": "Shell/SSH 接続（~/.quick-sh/config.json の shells で設定）"
   },
   "commands": {
     "pathSet": "スクリプトパスが設定されました: {{path}}",
@@ -249,5 +250,41 @@
     "conversationHistory": "会話履歴",
     "noHistory": "会話履歴はまだありません",
     "historyCleared": "会話履歴をクリアしました"
+  },
+  "shell": {
+    "notFound": "設定にシェル \"{{name}}\" が見つかりません。",
+    "noHost": "シェル \"{{name}}\" に host が設定されていません。",
+    "available": "利用可能なシェル名:",
+    "noShells": "シェル接続が設定されていません。",
+    "configHint": "~/.quick-sh/config.json に \"shells\" を追加してください。例: {\"shells\":{\"server1\":{\"host\":\"192.168.1.1\",\"user\":\"root\",\"port\":22}}}",
+    "helpHint": "q sh -h でヘルプを表示",
+    "listTitle": "シェル接続 (~/.quick-sh/config.json より):",
+    "usageHint": "使い方: q sh <名前>",
+    "sshError": "SSH エラー: {{error}}",
+    "helpTitle": "q sh - SSH/シェル接続（設定: ~/.quick-sh/config.json の shells）",
+    "helpUsage": "使い方:",
+    "helpList": "設定済み接続を一覧表示",
+    "helpConnect": "名前で接続（SSH）",
+    "helpConfig": "設定: ~/.quick-sh/config.json に shells を追加。例: {\"server1\":{\"host\":\"host\",\"user\":\"root\",\"port\":22}}",
+    "helpExample": "例: q sh、q sh server1",
+    "helpAdd": "接続を追加（対話式または --name x --host h [--user] [--port]）",
+    "helpRename": "接続名を変更（対話式または rename <旧> <新>）",
+    "helpRemove": "接続を削除（対話式または remove <名前>）",
+    "addNameHostRequired": "name と host を指定するか、対話式で q sh add を実行",
+    "addNameExists": "接続名 \"{{name}}\" は既に存在します",
+    "addSuccess": "接続を追加しました: {{name}}",
+    "renameArgsRequired": "旧名と新名を指定するか、対話式で q sh rename を実行",
+    "renameSuccess": "名前を変更しました: {{oldName}} → {{newName}}",
+    "removeNameRequired": "削除する名前を指定するか、対話式で q sh remove を実行",
+    "removeSuccess": "接続を削除しました: {{name}}",
+    "removeCancelled": "削除をキャンセルしました",
+    "promptName": "接続名",
+    "promptHost": "ホスト",
+    "promptUser": "ユーザー",
+    "promptPort": "ポート",
+    "promptRenameOld": "名前を変更する接続（名前または番号）",
+    "promptRenameNew": "新しい名前",
+    "promptRemove": "削除する接続（名前または番号）",
+    "promptRemoveConfirm": "\"{{name}}\" を削除しますか? (y/N)"
   }
 } 
